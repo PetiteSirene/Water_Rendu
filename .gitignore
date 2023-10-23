@@ -1,0 +1,38 @@
+# Dossiers spécifiques à Visual Studio
+.vscode/
+.vs/
+/bin/
+/obj/
+
+# Fichiers générés par CMake
+/CMakeFiles/
+/CMakeCache.txt
+/CMakeScripts/
+/CMakeScripts/
+/CMakeTmp/
+
+# Fichiers de projet Visual Studio
+*.suo
+*.user
+*.userprefs
+*.sln.docstates
+
+# Fichiers d'historique Visual Studio
+ipch/
+*.sdf
+*.opensdf
+*.sln.docstates
+
+# Fichiers de cache CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+/CMakeScripts/
+CMakeTmp/
+/CMakeTmp/
+
+# Fichiers de solution Visual Studio
+*.sln
+*.suo
+*.user
+*.userprefs

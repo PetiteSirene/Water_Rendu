@@ -3,6 +3,8 @@
 .vs/
 /bin/
 /obj/
+/out/
+
 
 # Fichiers générés par CMake
 /CMakeFiles/

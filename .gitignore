@@ -11,6 +11,9 @@
 /CMakeScripts/
 /CMakeTmp/
 
+# Dossier de build généré par CMake
+/build/
+
 # Fichiers de projet Visual Studio
 *.suo
 *.user

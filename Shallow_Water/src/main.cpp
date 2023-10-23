@@ -16,6 +16,7 @@
 #include "buffer_structures.hpp"
 
 #include "scene.hpp"
+#include "water.hpp"
 
 #define FOLDER_ROOT "../"
 

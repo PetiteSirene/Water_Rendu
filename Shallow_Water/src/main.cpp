@@ -29,6 +29,16 @@ int main(int argc, char* argv[]) {
 	ProjectionMatrix proj;
 	proj.set_viewport_resolution(ContextHelper::resolution);
 	proj.set_perspective(70.0f, 0.1f, 500.0f);//maybe to adjust to scene
+
+	float size_y = 1.f;
+	ProjectionMatrix ortho_proj;
+	//TODO mettre la résolution de la simulation de l'eau
+	ortho_proj.set_viewport_resolution(ContextHelper::resolution);
+	ortho_proj.set_ortho_centered(48.0f,0.1f,500.0f);
+	//Top-Down WorldView matrix
+	FreeFlyCamera topdown_cam;
+	topdown_cam.set_camera(vec3(0.f, 30.f, 0.f), 0.f, -90.f);
+
 	//WorldView matrix
 	FreeFlyCamera cam; // Maybe this class will be modified to have a "walk" mode (forced just above the ground)
 	cam.set_camera(vec3(-35.0f,30.0f,-30.0f),45.0f,-20.0f);
@@ -39,7 +49,10 @@ int main(int argc, char* argv[]) {
 	scene.load_shaders(FOLDER_ROOT);
 	scene.create_material_texture_array(FOLDER_ROOT,"rock");
 
-
+	Framebuffer depth_buffer;
+	//We create a framebuffer that contain only the z buffer
+	depth_buffer.create_framebuffer(0, {},true);
+	depth_buffer.update_size(ContextHelper::resolution);
 
 
 	//UBO init
@@ -95,10 +108,10 @@ int main(int argc, char* argv[]) {
 		//Flush Application UBO
 		app_ubo_data.proj = proj.m_proj;
 		app_ubo_data.inv_proj = glm::inverse(proj.m_proj);
-		app_ubo_data.w_v = cam.m_w_v;
-		app_ubo_data.w_v_p = proj.m_proj * cam.m_w_v;
+		app_ubo_data.w_v = topdown_cam.m_w_v;
+		app_ubo_data.w_v_p = ortho_proj.m_proj * topdown_cam.m_w_v;
 		app_ubo_data.inv_w_v_p = glm::inverse(app_ubo_data.w_v_p);
-		app_ubo_data.cam_pos = vec4(cam.m_pos, ContextHelper::time_from_start_s);
+		app_ubo_data.cam_pos = vec4(topdown_cam.m_pos, ContextHelper::time_from_start_s);
 		app_ubo_data.resolution.x = ContextHelper::resolution.x;
 		app_ubo_data.resolution.y = ContextHelper::resolution.y;
 		scene.write_params_to_application_struct(app_ubo_data);
@@ -115,8 +128,6 @@ int main(int argc, char* argv[]) {
 
 		if (draw_wireframe)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-
 
 		//ImGui interface starts here
 		ImGui::Begin("Parameters");

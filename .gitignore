@@ -3,7 +3,7 @@
 .vs/
 /bin/
 /obj/
-/out/
+/Shallow_Water/out/
 
 
 # Fichiers générés par CMake
@@ -14,7 +14,7 @@
 /CMakeTmp/
 
 # Dossier de build généré par CMake
-/build/
+/Shallow_Water/build/
 
 # Fichiers de projet Visual Studio
 *.suo

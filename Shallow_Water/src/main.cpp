@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
 
 	Framebuffer depth_buffer;
 	//We create a framebuffer that contain only the z buffer
-	depth_buffer.create_framebuffer(0, {},true);
+	depth_buffer.create_framebuffer(0,{}, true);
 	depth_buffer.update_size(ContextHelper::resolution);
 
 
@@ -105,10 +105,12 @@ int main(int argc, char* argv[]) {
 
 		proj.set_viewport_resolution(ContextHelper::resolution);
 		cam.flush();
+		
+		glBindFramebuffer(GL_FRAMEBUFFER, depth_buffer.m_framebuffer_id);
 
 		//Flush Application UBO
-		app_ubo_data.proj = proj.m_proj;
-		app_ubo_data.inv_proj = glm::inverse(proj.m_proj);
+		app_ubo_data.proj = ortho_proj.m_proj;
+		app_ubo_data.inv_proj = glm::inverse(ortho_proj.m_proj);
 		app_ubo_data.w_v = topdown_cam.m_w_v;
 		app_ubo_data.w_v_p = ortho_proj.m_proj * topdown_cam.m_w_v;
 		app_ubo_data.inv_w_v_p = glm::inverse(app_ubo_data.w_v_p);
@@ -127,6 +129,23 @@ int main(int argc, char* argv[]) {
 		scene.render_scene();//Render the scene without water
 		glFinish();//Force wait for GPU to finish jobs, since the post_process shader will read from rendered textures
 
+		app_ubo_data.proj = proj.m_proj;
+		app_ubo_data.inv_proj = glm::inverse(proj.m_proj);
+		app_ubo_data.w_v = cam.m_w_v;
+		app_ubo_data.w_v_p = proj.m_proj * cam.m_w_v;
+		app_ubo_data.inv_w_v_p = glm::inverse(app_ubo_data.w_v_p);
+		app_ubo_data.cam_pos = vec4(cam.m_pos, ContextHelper::time_from_start_s);
+		app_ubo_data.resolution.x = ContextHelper::resolution.x;
+		app_ubo_data.resolution.y = ContextHelper::resolution.y;
+		scene.write_params_to_application_struct(app_ubo_data);
+		application_ubo.write_to_gpu(&app_ubo_data);
+
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);
+
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//clear Frambuffer channel + Z-buffer 
+		scene.render_scene();//Render the scene without water
+		glFinish();//Force wait for GPU to finish jobs, since the post_process shader will render
 		if (draw_wireframe)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 

@@ -1,5 +1,7 @@
 #version 460
 #define UBO_APPLICATION_BINDING 0
+layout(quads, equal_spacing, ccw) in;
+in vec2 pos_2d[];
 
 //matches buffer_structures.hpp
 layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
@@ -18,10 +20,3 @@ layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
     uvec4 scene_params; //.x:tile_count, .y:seed, .z:tile_size[FLOAT], .w:map_offset[FLOAT]
 };
 
-out vec2 pos_2d;//must match FS
-out vec2 physics;
-
-void main() 
-{
-	pos_2d = vec2(gl_VertexID%scene_params.x,gl_VertexID/scene_params.x) - scene_params.x*0.5;
-}

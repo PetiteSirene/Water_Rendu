@@ -25,7 +25,7 @@ layout(binding = 2, rgba8) restrict writeonly uniform image2D post_process_color
 float read_depth_offset(vec2 center, ivec2 offset)
 {
     float ndc_depth =  2.0*textureLod(depth_buffer,center + (vec2(offset)+0.5) / resolution.xy,0.0).x-1.0;
-    return 1.0/(inv_proj[2][3]*ndc_depth+inv_proj[3][3]);//view_space depth
+    return ndc_depth;
 }
 
 vec3 WorldPosFromCoord(vec2 n_coords){
@@ -37,17 +37,24 @@ vec3 WorldPosFromCoord(vec2 n_coords){
 	}
 
 void main(){
+
+    vec4 white = vec4(1.0,1.0,1.0,1.0);
+    vec4 black = vec4(0.0,0.0,0.0,1.0);
+
 	ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
 
 	if (coord.x>=resolution.x || coord.y>=resolution.y)
         return; //Do not process out of screen
 
 	vec2 n_coords = (vec2(coord) + 0.5) / resolution.xy;
-	
-	if(WorldPosFromCoord(n_coords).y >= 0){
-		imageStore(post_process_color,coord,1.0.xxxx);
-	}
-	else {
-		imageStore(post_process_color,coord,vec4(0.0,0.0,0.0,1.0));
-	}
+        
+        if(WorldPosFromCoord(n_coords).y < 0){
+        // it is water, simulate
+		imageStore(post_process_color,coord,white);
+        }
+        else  {
+        // it is not water, do not simulate
+        imageStore(post_process_color,coord,black);
+        }
+
 }

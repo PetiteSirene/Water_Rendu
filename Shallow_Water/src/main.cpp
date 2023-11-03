@@ -33,12 +33,11 @@ int main(int argc, char* argv[]) {
 
 	float size_y = 1.f;
 	ProjectionMatrix ortho_proj;
-	//TODO mettre la résolution de la simulation de l'eau
 	ortho_proj.set_viewport_resolution(ContextHelper::resolution);
 	ortho_proj.set_ortho_centered(48.0f,0.1f,500.0f);
 	//Top-Down WorldView matrix
 	FreeFlyCamera topdown_cam;
-	topdown_cam.set_camera(vec3(0.f, 30.f, 0.f), 0.f, -90.f);
+	topdown_cam.set_camera(vec3(0.f, 35.f, 0.f), 0.f, -90.f);
 
 	//WorldView matrix
 	FreeFlyCamera cam; // Maybe this class will be modified to have a "walk" mode (forced just above the ground)
@@ -67,20 +66,21 @@ int main(int argc, char* argv[]) {
 	app_ubo_data.resolution.y = ContextHelper::resolution.y;
 	app_ubo_data.resolution.z = 0;//Normal display
 
+	ShaderGLSL* compute_shader = new ShaderGLSL("compute_shader");
+	compute_shader->add_shader(GL_COMPUTE_SHADER, FOLDER_ROOT, "shaders/water_cs.glsl");
+	compute_shader->compile_and_link_to_program();
+	ContextHelper::add_shader_to_hot_reload(compute_shader);
 
-	//Framebuffer (G-Buffer) for deferred shading
-	//G-Buffer made of 2 textures:
-	// - Channel 0 (TEXTURE_SLOT_G_BUFFER_0): normal_ws (.xyz) + material_id (.w) (uintbits)
-	// - Channel 1 (TEXTURE_SLOT_Z_BUFFER): Z-Buffer 
-	//Note: position_ws is retrieved in shader from transform matrices and Z-Buffer
-	/* Note: material_id encodes to what material a pixel belongs
-	* - ID = 0: Background or clouds (to be raymarched)
-	* - ID = 1: Ground
-	* - ID = 2 + K: grass strand number K 
-	*/
-	Framebuffer gbuffer_target;
-	gbuffer_target.create_framebuffer(1,{GL_RGBA32F,GL_RGBA,GL_FLOAT,4}, true);
-	gbuffer_target.update_size(ContextHelper::resolution);//re-create target on resolution change
+	// At the end of the compute shader, the pixel is white if it is below the water level.
+	Texture2D isWaterTexture;
+	isWaterTexture.set_format_params({ GL_RGBA8,GL_RGBA,GL_UNSIGNED_BYTE,4 });
+	isWaterTexture.set_filtering_params();
+	isWaterTexture.create_empty(ContextHelper::resolution);
+	isWaterTexture.set_slot(2);
+	isWaterTexture.bind_to_image(GL_WRITE_ONLY);
+
+
+
 
 	//OpenglFlags
 	bool draw_wireframe = false;
@@ -99,7 +99,9 @@ int main(int argc, char* argv[]) {
 		if (ContextHelper::window_resized)
 		{
 			glViewport(0, 0, ContextHelper::resolution.x, ContextHelper::resolution.y);
-			gbuffer_target.update_size(ContextHelper::resolution);//re-create target on resolution change
+			depth_buffer.update_size(ContextHelper::resolution);
+			isWaterTexture.re_create_empty(ContextHelper::resolution);
+			isWaterTexture.bind_to_image(GL_WRITE_ONLY);
 		}
 		scene.flush_tessellation_levels();
 
@@ -125,9 +127,20 @@ int main(int argc, char* argv[]) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//clear Frambuffer channel + Z-buffer 
+		glClear(GL_DEPTH_BUFFER_BIT);//clear Frambuffer channel + Z-buffer 
 		scene.render_scene();//Render the scene without water
 		glFinish();//Force wait for GPU to finish jobs, since the post_process shader will read from rendered textures
+
+
+		const uvec2 work_group_size = uvec2(8, 8);//MUST MATCH COMPUTE SHADER
+
+		const uvec2 dispatch_count = uvec2((ContextHelper::resolution.x + (work_group_size.x - 1)) / work_group_size.x,
+			(ContextHelper::resolution.y + (work_group_size.y - 1)) / work_group_size.y);
+
+		compute_shader->use_shader_program();//Compute shader for SSAO + depth blur
+		glDispatchCompute(dispatch_count.x, dispatch_count.y, 1);//Dispatch that covers screen 
+		glFlush();
+		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);//Sync barrier to ensure CS finished (since it is writing to an Image)
 
 		app_ubo_data.proj = proj.m_proj;
 		app_ubo_data.inv_proj = glm::inverse(proj.m_proj);
@@ -140,7 +153,7 @@ int main(int argc, char* argv[]) {
 		scene.write_params_to_application_struct(app_ubo_data);
 		application_ubo.write_to_gpu(&app_ubo_data);
 
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);
+		glBindFramebuffer(GL_FRAMEBUFFER,0);
 
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//clear Frambuffer channel + Z-buffer 

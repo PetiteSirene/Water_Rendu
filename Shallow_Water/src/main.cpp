@@ -49,6 +49,9 @@ int main(int argc, char* argv[]) {
 	scene.load_shaders(FOLDER_ROOT);
 	scene.create_material_texture_array(FOLDER_ROOT,"rock");
 
+	Water water;
+	water.load_shaders(FOLDER_ROOT);
+
 	Framebuffer depth_buffer;
 	//We create a framebuffer that contain only the z buffer
 	depth_buffer.create_framebuffer(0,{}, true);
@@ -93,6 +96,7 @@ int main(int argc, char* argv[]) {
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	glPatchParameteri(GL_PATCH_VERTICES, 1);//1 Patch per ground tile
+
 	while (ContextHelper::should_not_close_window()) //main/render loop
 	{
 		ContextHelper::begin_frame();

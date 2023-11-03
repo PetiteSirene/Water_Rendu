@@ -14,6 +14,9 @@ Water::Water()
 
 void Water::load_shaders(std::string base_path)
 {
+    m_shader_water->add_shader(GL_VERTEX_SHADER, base_path, "shaders/water_vs.glsl");
+    m_shader_water->add_shader(GL_VERTEX_SHADER, base_path, "shaders/water_gs.glsl");
+    m_shader_water->add_shader(GL_VERTEX_SHADER, base_path, "shaders/water_fs.glsl");
     m_shader_water->compile_and_link_to_program();
     ContextHelper::add_shader_to_hot_reload(m_shader_water);
 }

@@ -1,5 +1,6 @@
 #version 460
 #define UBO_APPLICATION_BINDING 0
+
 //matches buffer_structures.hpp
 layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
 {

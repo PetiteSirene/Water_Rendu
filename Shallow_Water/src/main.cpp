@@ -135,8 +135,7 @@ int main(int argc, char* argv[]) {
 		glClear(GL_DEPTH_BUFFER_BIT);//clear Frambuffer channel + Z-buffer 
 		scene.render_scene();//Render the scene without water
 		glFinish();//Force wait for GPU to finish jobs, since the post_process shader will read from rendered textures
-		water.render_water();
-		glFinish();
+
 
 		const uvec2 work_group_size = uvec2(8, 8);//MUST MATCH COMPUTE SHADER
 
@@ -165,6 +164,8 @@ int main(int argc, char* argv[]) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//clear Frambuffer channel + Z-buffer 
 		scene.render_scene();//Render the scene without water
 		glFinish();//Force wait for GPU to finish jobs, since the post_process shader will render
+		water.render_water();
+		glFinish();
 		if (draw_wireframe)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 

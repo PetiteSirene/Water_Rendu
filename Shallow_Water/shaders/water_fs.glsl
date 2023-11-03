@@ -25,7 +25,7 @@ in vec3 pos;
 void main() 
 {
     
-    vec3 color = vec3(0.0 , 1.0 , 0.0);
+    vec3 color = vec3(0.0 , 0.5 , 1.0);
 
     pixel_color = vec4(color,1.0);
 }

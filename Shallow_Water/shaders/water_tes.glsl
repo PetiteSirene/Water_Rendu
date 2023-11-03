@@ -30,7 +30,7 @@ void main()
 {
 
     vec3 pos;
-    pos.xz = tile_size*(ijCoords[0] + scene_params.x * 0.5 + gl_TessCoord.xy);
+    pos.xz = tile_size*(ijCoords[0] - scene_params.x * 0.5 + gl_TessCoord.xy);
     pos.y = 0.0f;//imageLoad(physicsImage,ijCoords);
     gl_Position = w_v_p * vec4(pos,1.0);
 }

@@ -25,7 +25,7 @@ void Water::render_water()
 {
     m_shader_water->use_shader_program();
     //The tessellation shader will generate one subdivised quad per "GL_PATCHES", thus we have to set it to the number of tiles
-    glDrawArrays(GL_PATCHES, 0, simulation_resolution * simulation_resolution);
+    glDrawArrays(GL_PATCHES, 0, 24 * 24);
     glFlush();
 
 }

@@ -18,10 +18,9 @@ layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
     uvec4 scene_params; //.x:tile_count, .y:seed, .z:tile_size[FLOAT], .w:map_offset[FLOAT]
 };
 
-out vec2 pos_2d;//must match FS
-out vec2 physics;
+out vec2 ijCoords;
 
 void main() 
 {
-	pos_2d = vec2(gl_VertexID%scene_params.x,gl_VertexID/scene_params.x) - scene_params.x*0.5;
+	ijCoords = vec2(gl_VertexID % scene_params.x , gl_VertexID / scene_params.x);
 }

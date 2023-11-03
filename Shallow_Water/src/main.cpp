@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
 	isWaterTexture.set_format_params({ GL_RGBA8,GL_RGBA,GL_UNSIGNED_BYTE,4 });
 	isWaterTexture.set_filtering_params();
 	isWaterTexture.create_empty(ContextHelper::resolution);
-	isWaterTexture.set_slot(2);
+	isWaterTexture.set_slot(1);
 	isWaterTexture.bind_to_image(GL_WRITE_ONLY);
 
 
@@ -124,6 +124,7 @@ int main(int argc, char* argv[]) {
 		app_ubo_data.resolution.x = ContextHelper::resolution.x;
 		app_ubo_data.resolution.y = ContextHelper::resolution.y;
 		scene.write_params_to_application_struct(app_ubo_data);
+
 		application_ubo.write_to_gpu(&app_ubo_data);
 
 
@@ -134,7 +135,8 @@ int main(int argc, char* argv[]) {
 		glClear(GL_DEPTH_BUFFER_BIT);//clear Frambuffer channel + Z-buffer 
 		scene.render_scene();//Render the scene without water
 		glFinish();//Force wait for GPU to finish jobs, since the post_process shader will read from rendered textures
-
+		water.render_water();
+		glFinish();
 
 		const uvec2 work_group_size = uvec2(8, 8);//MUST MATCH COMPUTE SHADER
 

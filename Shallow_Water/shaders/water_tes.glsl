@@ -1,7 +1,7 @@
 #version 460
 #define UBO_APPLICATION_BINDING 0
 layout(quads, equal_spacing, ccw) in;
-in vec2 pos_2d[];
+in vec2 ijCoords[];
 
 //matches buffer_structures.hpp
 layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
@@ -20,3 +20,17 @@ layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
     uvec4 scene_params; //.x:tile_count, .y:seed, .z:tile_size[FLOAT], .w:map_offset[FLOAT]
 };
 
+layout(binding = 2, rg8) restrict readonly uniform image2D physicsImage;
+
+out vec3 pos;
+
+float tile_size = uintBitsToFloat(scene_params.z);
+
+void main() 
+{
+
+    vec3 pos;
+    pos.xz = tile_size*(ijCoords[0] + scene_params.x * 0.5 + gl_TessCoord.xy);
+    pos.y = 0.0f;//imageLoad(physicsImage,ijCoords);
+    gl_Position = w_v_p * vec4(pos,1.0);
+}

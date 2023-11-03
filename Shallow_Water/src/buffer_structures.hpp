@@ -11,6 +11,8 @@ using namespace glm;
 //more at https://www.khronos.org/opengl/wiki/Interface_Block_(GLSL)#Memory_layout
 
 //Texture channels ID:
+#define TEXTURE_SLOT_WATER_PHYSICS 2
+#define TEXTURE_SLOT_WATER_NORMALS 3
 #define TEXTURE_SLOT_ALBEDO_GROUND 4
 #define TEXTURE_SLOT_NORMAL_GROUND 5
 #define TEXTURE_SLOT_ROUGHNESS_GROUND 6

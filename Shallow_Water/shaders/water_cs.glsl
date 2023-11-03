@@ -20,7 +20,7 @@ layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
 
 layout(binding = 0) uniform sampler2D depth_buffer;//G-Buffer,read from, in [0.0,1.0] !
 
-layout(binding = 2, rgba8) restrict writeonly uniform image2D post_process_color;//output image
+layout(binding = 1, rgba8) restrict writeonly uniform image2D post_process_color;//output image
 
 float read_depth_offset(vec2 center, ivec2 offset)
 {

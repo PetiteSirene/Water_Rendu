@@ -10,6 +10,7 @@ class Water {
 public:
     Water();
     void load_shaders(std::string base_path);
+    void render_water();
 
     //creation des textures
     void InitializeTextures(int size);

@@ -16,6 +16,7 @@ layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
     vec4 sun_light;//.xyz: direction, .w:intensity
     //Scene
     uvec4 scene_params; //.x:tile_count, .y:seed, .z:tile_size[FLOAT], .w:map_offset[FLOAT]
+    vec4 water_params; //.x:resolution, .y:absorbance
 };
 
 

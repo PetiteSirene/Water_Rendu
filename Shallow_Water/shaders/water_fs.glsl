@@ -17,6 +17,7 @@ layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
     vec4 sun_light;//.xyz: direction, .w:intensity
     //Scene
     uvec4 scene_params; //.x:tile_count, .y:seed, .z:tile_size[FLOAT], .w:map_offset[FLOAT]
+    vec4 water_params; //.x:resolution, .y:absorbance
 };
 
 in vec3 pos;
@@ -27,7 +28,7 @@ void main()
     
     vec3 color = vec3(0.0 , 0.5 , 1.0);
 
-    pixel_color = vec4(color,1.0);
+    pixel_color = vec4(color,0.3);
 }
 
 

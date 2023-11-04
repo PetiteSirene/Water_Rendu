@@ -21,17 +21,16 @@ layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
     vec4 water_params; //.x:resolution, .y:absorbance
 };
 
-layout(binding = 2, rg8) restrict readonly uniform image2D physicsImage;
-
+layout(binding = 2) uniform sampler2D physicsTexture;
 out vec3 pos;
-
+out vec2 tex_coords;//in [0.0,1.0]
 float tile_size = uintBitsToFloat(scene_params.z);
 
 void main() 
 {
-
+    tex_coords = (ijCoords[0] + gl_TessCoord.xy)/float(scene_params.x);
     vec3 pos;
     pos.xz = tile_size*(ijCoords[0] - scene_params.x * 0.5 + gl_TessCoord.xy);
-    pos.y = 0.0f;//imageLoad(physicsImage,ijCoords);
+    pos.y = textureLod(physicsTexture,tex_coords,0.0).x;
     gl_Position = w_v_p * vec4(pos,1.0);
 }

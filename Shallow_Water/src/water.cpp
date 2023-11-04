@@ -32,27 +32,34 @@ void Water::render_water()
 
 void Water::InitializeTextures(int size)
 {
+    //Can be only called once !
+   
     //physics part
     std::vector<glm::vec2> physicData(size * size, glm::vec2(0.0f, 0.0f));
+    glCreateTextures(GL_TEXTURE_2D, 1, &texturePhysics);
     glBindTexture(GL_TEXTURE_2D, texturePhysics);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, size, size, 0, GL_RG, GL_FLOAT, physicData.data());
-    glBindTexture(GL_TEXTURE_2D, TEXTURE_SLOT_WATER_PHYSICS);
+    glTextureStorage2D(texturePhysics, 1,GL_RG32F, size, size);//Immutable size
+    glTextureSubImage2D(texturePhysics, 0, 0, 0, size, size, GL_RG, GL_FLOAT, physicData.data());
+    glBindTextureUnit(TEXTURE_SLOT_WATER_PHYSICS, texturePhysics);
 
     //normals part
     std::vector<glm::vec4> normalData(size * size, glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
+    glCreateTextures(GL_TEXTURE_2D, 1, &textureNormals);
     glBindTexture(GL_TEXTURE_2D, textureNormals);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, size, size, 0, GL_RGBA, GL_FLOAT, normalData.data());
-    glBindTexture(GL_TEXTURE_2D, TEXTURE_SLOT_WATER_NORMALS);
+    glTextureStorage2D(textureNormals, 1, GL_RGBA32F, size, size);//Immutable size
+    glTextureSubImage2D(textureNormals, 0, 0, 0, size, size, GL_RGBA, GL_FLOAT, normalData.data());
+    glBindTextureUnit(TEXTURE_SLOT_WATER_NORMALS, textureNormals);
+
+
 }
 
+//No need I guess
 void Water::BindPhysicsTexture(GLuint unit)
 {
-    glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D, texturePhysics);
+    glBindTextureUnit(unit, texturePhysics);
 }
 
 void Water::BindNormalsTexture(GLuint unit)
 {
-    glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D, textureNormals);
+    glBindTextureUnit(unit, textureNormals);
 }

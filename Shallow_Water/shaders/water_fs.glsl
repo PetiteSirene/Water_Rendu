@@ -21,12 +21,12 @@ layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
 };
 
 in vec3 pos;
-
-
+in vec2 tex_coords;//in [0.0,1.0]
+layout(binding = 3) uniform sampler2D normalTexture;
 void main() 
 {
-    
-    vec3 color = vec3(0.0 , 0.5 , 1.0);
+    vec3 n = textureLod(normalTexture,tex_coords,0.0).xyz;
+    vec3 color = 0.5*n+0.5;//vec3(0.0 , 0.5 , 1.0);
 
     pixel_color = vec4(color,0.3);
 }

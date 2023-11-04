@@ -23,17 +23,18 @@ layout(binding = 0) uniform sampler2D depth_buffer;//G-Buffer,read from, in [0.0
 
 layout(binding = 1, rgba8) restrict writeonly uniform image2D post_process_color;//output image
 
-float read_depth_offset(vec2 center, ivec2 offset)
+float read_depth(vec2 center)
 {
-    float ndc_depth =  2.0*textureLod(depth_buffer,center + (vec2(offset)+0.5) / resolution.xy,0.0).x-1.0;
+    float ndc_depth =  2.0*textureLod(depth_buffer,center/ resolution.xy,0.0).x-1.0;
     return ndc_depth;
 }
 
 vec3 WorldPosFromCoord(vec2 n_coords){
 
-	float depth = read_depth_offset(n_coords,ivec2(0,0));
+	float depth = read_depth(n_coords);
 
 	vec4 clipSpacePosition = vec4(n_coords * 2.0 - 1.0, depth, 1.0);
+  //Skipping perspective division because comparing to zero ?
 	return (inv_w_v_p * clipSpacePosition).xyz;
 	}
 

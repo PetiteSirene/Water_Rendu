@@ -25,7 +25,7 @@ void Water::render_water()
 {
     m_shader_water->use_shader_program();
     //The tessellation shader will generate one subdivised quad per "GL_PATCHES", thus we have to set it to the number of tiles
-    glDrawArrays(GL_PATCHES, 0, 24 * 24);
+    glDrawArrays(GL_PATCHES, 0, simulation_resolution * simulation_resolution);
     glFlush();
 
 }
@@ -53,6 +53,11 @@ void Water::InitializeTextures(int size)
 
 }
 
+int Water::GetSimulationResolution()
+{
+    return simulation_resolution;
+}
+
 //No need I guess
 void Water::BindPhysicsTexture(GLuint unit)
 {
@@ -62,4 +67,11 @@ void Water::BindPhysicsTexture(GLuint unit)
 void Water::BindNormalsTexture(GLuint unit)
 {
     glBindTextureUnit(unit, textureNormals);
+}
+
+void Water::write_params_to_application_struct(ApplicationUboDataStructure& app_ubo)
+{
+    app_ubo.water_params.x = simulation_resolution;
+    app_ubo.water_params.y = absorbance;
+    app_ubo.water_params.z = 24 * 4.0f / simulation_resolution;
 }

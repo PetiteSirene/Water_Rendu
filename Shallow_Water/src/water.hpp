@@ -14,9 +14,12 @@ public:
 
     //creation des textures
     void InitializeTextures(int size);
+    int GetSimulationResolution();
 
     void BindPhysicsTexture(GLuint unit);
     void BindNormalsTexture(GLuint unit);
+
+    void write_params_to_application_struct(ApplicationUboDataStructure& app_ubo);
 
 private:
     ShaderGLSL* m_shader_water;

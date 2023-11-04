@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 	Framebuffer depth_buffer;
 	//We create a framebuffer that contain only the z buffer
 	depth_buffer.create_framebuffer(0,{}, true);
-	depth_buffer.update_size(ContextHelper::resolution);
+	depth_buffer.update_size(vec2(water.GetSimulationResolution(), water.GetSimulationResolution()));
 
 
 	//UBO init
@@ -103,7 +103,6 @@ int main(int argc, char* argv[]) {
 		if (ContextHelper::window_resized)
 		{
 			glViewport(0, 0, ContextHelper::resolution.x, ContextHelper::resolution.y);
-			depth_buffer.update_size(ContextHelper::resolution);
 			isWaterTexture.re_create_empty(ContextHelper::resolution);
 			isWaterTexture.bind_to_image(GL_WRITE_ONLY);
 		}
@@ -156,6 +155,7 @@ int main(int argc, char* argv[]) {
 		app_ubo_data.resolution.x = ContextHelper::resolution.x;
 		app_ubo_data.resolution.y = ContextHelper::resolution.y;
 		scene.write_params_to_application_struct(app_ubo_data);
+		water.write_params_to_application_struct(app_ubo_data);
 		application_ubo.write_to_gpu(&app_ubo_data);
 
 		glBindFramebuffer(GL_FRAMEBUFFER,0);

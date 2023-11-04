@@ -23,5 +23,5 @@ out vec2 ijCoords;
 
 void main() 
 {
-	ijCoords = vec2(gl_VertexID % scene_params.x , gl_VertexID / scene_params.x);
+	ijCoords = vec2(gl_VertexID % int(water_params.x) , gl_VertexID / int(water_params.x));
 }

@@ -25,7 +25,7 @@ layout(binding = 1, rgba8) restrict writeonly uniform image2D post_process_color
 
 float read_depth(vec2 center)
 {
-    float ndc_depth =  2.0*textureLod(depth_buffer,center/ resolution.xy,0.0).x-1.0;
+    float ndc_depth =  2.0*textureLod(depth_buffer,center,0.0).x-1.0;
     return ndc_depth;
 }
 

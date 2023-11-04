@@ -26,6 +26,13 @@ int main(int argc, char* argv[]) {
 	ContextHelper::init_context_all(1440, 900, "Shallow Water",4);//No MSAA, because of Deferred shading
 	ContextHelper::print_opengl_info();
 
+	Scene scene;
+	scene.load_shaders(FOLDER_ROOT);
+	scene.create_material_texture_array(FOLDER_ROOT, "rock");
+
+	Water water;
+	water.load_shaders(FOLDER_ROOT);
+
 	//Projection matrix
 	ProjectionMatrix proj;
 	proj.set_viewport_resolution(ContextHelper::resolution);
@@ -33,8 +40,8 @@ int main(int argc, char* argv[]) {
 
 	float size_y = 1.f;
 	ProjectionMatrix ortho_proj;
-	ortho_proj.set_viewport_resolution(ContextHelper::resolution);
-	ortho_proj.set_ortho_centered(48.0f,0.1f,500.0f);
+	ortho_proj.set_viewport_resolution(vec2(water.GetSimulationResolution(),water.GetSimulationResolution()));
+	ortho_proj.set_ortho_centered(48.f,0.1f,500.0f);
 	//Top-Down WorldView matrix
 	FreeFlyCamera topdown_cam;
 	topdown_cam.set_camera(vec3(0.f, 35.f, 0.f), 0.f, -90.f);
@@ -45,12 +52,7 @@ int main(int argc, char* argv[]) {
 	cam.set_params(0.1f,0.5f,50.0f);
 
 
-	Scene scene;
-	scene.load_shaders(FOLDER_ROOT);
-	scene.create_material_texture_array(FOLDER_ROOT,"rock");
 
-	Water water;
-	water.load_shaders(FOLDER_ROOT);
 
 	Framebuffer depth_buffer;
 	//We create a framebuffer that contain only the z buffer
@@ -78,7 +80,7 @@ int main(int argc, char* argv[]) {
 	Texture2D isWaterTexture;
 	isWaterTexture.set_format_params({ GL_RGBA8,GL_RGBA,GL_UNSIGNED_BYTE,4 });
 	isWaterTexture.set_filtering_params();
-	isWaterTexture.create_empty(ContextHelper::resolution);
+	isWaterTexture.create_empty(vec2(water.GetSimulationResolution(), water.GetSimulationResolution()));
 	isWaterTexture.set_slot(1);
 	isWaterTexture.bind_to_image(GL_WRITE_ONLY);
 
@@ -120,8 +122,8 @@ int main(int argc, char* argv[]) {
 		app_ubo_data.w_v_p = ortho_proj.m_proj * topdown_cam.m_w_v;
 		app_ubo_data.inv_w_v_p = glm::inverse(app_ubo_data.w_v_p);
 		app_ubo_data.cam_pos = vec4(topdown_cam.m_pos, ContextHelper::time_from_start_s);
-		app_ubo_data.resolution.x = ContextHelper::resolution.x;
-		app_ubo_data.resolution.y = ContextHelper::resolution.y;
+		app_ubo_data.resolution.x = water.GetSimulationResolution();
+		app_ubo_data.resolution.y = water.GetSimulationResolution();
 		scene.write_params_to_application_struct(app_ubo_data);
 
 		application_ubo.write_to_gpu(&app_ubo_data);
@@ -138,8 +140,8 @@ int main(int argc, char* argv[]) {
 
 		const uvec2 work_group_size = uvec2(8, 8);//MUST MATCH COMPUTE SHADER
 
-		const uvec2 dispatch_count = uvec2((ContextHelper::resolution.x + (work_group_size.x - 1)) / work_group_size.x,
-			(ContextHelper::resolution.y + (work_group_size.y - 1)) / work_group_size.y);
+		const uvec2 dispatch_count = uvec2((water.GetSimulationResolution() + (work_group_size.x - 1)) / work_group_size.x,
+			(water.GetSimulationResolution() + (work_group_size.y - 1)) / work_group_size.y);
 
 		compute_shader->use_shader_program();//Compute shader for SSAO + depth blur
 		glDispatchCompute(dispatch_count.x, dispatch_count.y, 1);//Dispatch that covers screen 
@@ -194,6 +196,7 @@ int main(int argc, char* argv[]) {
 		if (ImGui::TreeNode("Debug"))
 		{
 			ImGui::Checkbox("Draw wireframe", &draw_wireframe);
+			ImGui::Text(("Cam position: " + std::to_string(cam.m_pos.x) + " " + std::to_string(cam.m_pos.y) + " " + std::to_string(cam.m_pos.z)).c_str());
 			ImGui::TreePop();
 		}
 		if (ImGui::TreeNode("Sun"))

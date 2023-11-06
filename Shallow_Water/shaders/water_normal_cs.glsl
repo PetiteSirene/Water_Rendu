@@ -19,7 +19,7 @@ layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
     vec4 water_params; //.x:resolution, .y:absorbance
 };
 
-layout(binding = 2) uniform image2D physicsTexture;
+layout(binding = 2,rg32f) uniform image2D physicsTexture;
 
 layout(binding = 3) writeonly uniform image2D normalsTexture;
 
@@ -37,9 +37,9 @@ void main(){
 	ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
 
     // tantpis pour les effets de bord
-    float xdiff = imageLoad(physicsTexture,coord + vec2(1,0)).x - imageLoad(physicsTexture,coord - vec2(1,0)).x;
+    float xdiff = imageLoad(physicsTexture,coord + ivec2(1,0)).x - imageLoad(physicsTexture,coord - ivec2(1,0)).x;
 
-    float zdiff = imageLoad(physicsTexture,coord + vec2(0,1)).x - imageLoad(physicsTexture,coord - vec2(0,1)).x;
+    float zdiff = imageLoad(physicsTexture,coord + ivec2(0,1)).x - imageLoad(physicsTexture,coord - ivec2(0,1)).x;
 
     vec4 xvec = vec4( 2 * dist, xdiff, 0.0f, 0.0f); 
     vec4 zvec = vec4( 0.0f, zdiff, 2 * dist, 0.0f);
@@ -50,7 +50,7 @@ void main(){
     vec4 normal = vec4(normalize(cross(xvec.xyz,zvec.xyz)),0.0); // inverser les vec si ca marche pas
         
         
-    imageStore(normalsTexture,coord,vec4(0.0,1.0,0.0,0.0));
+    imageStore(normalsTexture,coord,normal);
  
 
 }

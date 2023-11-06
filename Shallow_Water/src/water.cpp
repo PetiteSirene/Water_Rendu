@@ -37,6 +37,12 @@ void Water::InitializeTextures(int size)
    
     //physics part
     std::vector<glm::vec2> physicData(size * size, glm::vec2(0.0f, 0.0f));
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            physicData[((size + i) * (size + i)) / 2 + j - size / 2] = vec2(5.0f, 0.0f);
+        }
+
+    }
     glCreateTextures(GL_TEXTURE_2D, 1, &texturePhysics);
     //glBindTexture(GL_TEXTURE_2D, texturePhysics);
     glTextureParameteri(texturePhysics, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -77,7 +83,7 @@ void Water::write_params_to_application_struct(ApplicationUboDataStructure& app_
     app_ubo.water_params.x = simulation_resolution;
     app_ubo.water_params.y = absorbance;
     app_ubo.water_params.z = 24 * 4.0f / simulation_resolution;
-    app_ubo.water_params.w = 2.0f;
+    app_ubo.water_params.w = 1.0f;
 }
 
 void Water::flush_tessellation_levels()

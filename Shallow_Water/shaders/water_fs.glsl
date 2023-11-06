@@ -26,7 +26,7 @@ layout(binding = 3) uniform sampler2D normalTexture;
 void main() 
 {
     vec3 n = textureLod(normalTexture,tex_coords,0.0).xyz;
-    vec3 color = 0.5*n+0.5;//vec3(0.0 , 0.5 , 1.0);
+    vec3 color = 0.5*n+vec3(0.0 , 0.4 , 0.6);
 
     pixel_color = vec4(color,0.3);
 }

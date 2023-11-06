@@ -75,6 +75,11 @@ int main(int argc, char* argv[]) {
 	compute_shader->compile_and_link_to_program();
 	ContextHelper::add_shader_to_hot_reload(compute_shader);
 
+	ShaderGLSL* compute_shader_normal = new ShaderGLSL("normal");
+	compute_shader_normal->add_shader(GL_COMPUTE_SHADER, FOLDER_ROOT, "shaders/water_normal_cs.glsl");
+	compute_shader_normal->compile_and_link_to_program();
+	ContextHelper::add_shader_to_hot_reload(compute_shader_normal);
+
 	// At the end of the compute shader, the pixel is white if it is below the water level.
 	Texture2D isWaterTexture;
 	isWaterTexture.set_format_params({ GL_RGBA8,GL_RGBA,GL_UNSIGNED_BYTE,4 });
@@ -146,6 +151,11 @@ int main(int argc, char* argv[]) {
 		glDispatchCompute(dispatch_count.x, dispatch_count.y, 1);//Dispatch that covers screen 
 		glFlush();
 		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);//Sync barrier to ensure CS finished (since it is writing to an Image)
+		
+		compute_shader_normal->use_shader_program();
+		glDispatchCompute(dispatch_count.x, dispatch_count.y, 1);
+		glFlush();
+		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
 		app_ubo_data.proj = proj.m_proj;
 		app_ubo_data.inv_proj = glm::inverse(proj.m_proj);

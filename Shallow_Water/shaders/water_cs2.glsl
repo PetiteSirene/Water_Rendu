@@ -42,17 +42,7 @@ vec3 WorldPosFromCoord(vec2 n_coords){
 	return (inv_w_v_p * clipSpacePosition).xyz;
 	}
 
-void compute_speed(ivec2 coord){
-    float a = pow(c,2)*pow(deltaT,2)/pow(h,2);
-    float old = imageLoad(water_physic,coord).g;
-    float p = imageLoad(water_physic, coord).r;
-    float p1 = imageLoad(water_physic, coord + ivec2(0,1)).r;
-    float p2 = imageLoad(water_physic, coord + ivec2(1,0)).r;
-    float p3 = imageLoad(water_physic, coord + ivec2(0,-1)).r;
-    float p4 = imageLoad(water_physic, coord + ivec2(-1,0)).r;
-    float newP = 0.4 * (p1 + p2 + p3 + p4) + (2 - 4*0.4) * p - old;
-    imageStore(water_physic, coord, vec4(newP,p,0.0,0.0));
-}
+
 
 void main(){
 
@@ -66,6 +56,8 @@ void main(){
 
 	vec2 n_coords = (vec2(coord) + 0.5) / resolution.xy;
        
-    compute_speed(coord);
-    
+    float v = imageLoad(water_physic,coord).g;
+    float p = imageLoad(water_physic,coord).r;
+
+    imageStore(water_physic, coord, vec4(p * v,p,0,0));
 }

@@ -30,7 +30,7 @@ struct ApplicationUboDataStructure
 	mat4 w_v_p; //world to eye matrix
 	mat4 inv_w_v_p; //eye to world matrix
 	vec4 cam_pos;//camera position in world space, .w: time
-	ivec4 resolution; //.x:resolution.x, .y:resolution.y, .z: debug_mode, .w:unused
+	ivec4 resolution; //.x:resolution.x, .y:resolution.y, .z: debug_mode, .w: time per frame[FLOAT]
 	//Light
 	vec4 sun_light;//.xyz: direction, .w:intensity
 	//Scene

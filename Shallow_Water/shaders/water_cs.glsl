@@ -16,12 +16,16 @@ layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
     vec4 sun_light;//.xyz: direction, .w:intensity
     //Scene
     uvec4 scene_params; //.x:tile_count, .y:seed, .z:tile_size[FLOAT], .w:map_offset[FLOAT]
-    vec4 water_params; //.x:resolution, .y:absorbance
+    vec4 water_params; //.x:resolution[INT], .y:absorbance, .z:water_tile_size[FLOAT]
 };
 
 layout(binding = 0) uniform sampler2D depth_buffer;//G-Buffer,read from, in [0.0,1.0] !
 
-layout(binding = 1, rgba8) restrict writeonly uniform image2D post_process_color;//output image
+layout(rg32f,binding = 2) uniform image2D water_physic;//output image
+
+float deltaT = intBitsToFloat(resolution.w);
+float h = water_params.z;
+float c = water_params.w;
 
 float read_depth(vec2 center)
 {
@@ -38,6 +42,18 @@ vec3 WorldPosFromCoord(vec2 n_coords){
 	return (inv_w_v_p * clipSpacePosition).xyz;
 	}
 
+void compute_speed(ivec2 coord){
+    float a = pow(c,2)*pow(deltaT,2)/pow(h,2);
+    float Vt = imageLoad(water_physic,coord).g;
+    float p = imageLoad(water_physic, coord).r;
+    float p1 = imageLoad(water_physic, coord + ivec2(0,1)).r;
+    float p2 = imageLoad(water_physic, coord + ivec2(1,0)).r;
+    float p3 = imageLoad(water_physic, coord + ivec2(0,-1)).r;
+    float p4 = imageLoad(water_physic, coord + ivec2(-1,0)).r;
+    float newVt = a * (p1 + p2 + p3 + p4) + (2 - 4*a) * p - deltaT * Vt;
+    imageStore(water_physic, coord, vec4(1.0,1.0,0,0));
+}
+
 void main(){
 
     vec4 white = vec4(1.0,1.0,1.0,1.0);
@@ -49,14 +65,7 @@ void main(){
         return; //Do not process out of screen
 
 	vec2 n_coords = (vec2(coord) + 0.5) / resolution.xy;
-        
-        if(WorldPosFromCoord(n_coords).y < 0){
-        // it is water, simulate
-		imageStore(post_process_color,coord,white);
-        }
-        else  {
-        // it is not water, do not simulate
-        imageStore(post_process_color,coord,black);
-        }
-
+       
+    compute_speed(coord);
+    
 }

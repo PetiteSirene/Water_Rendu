@@ -38,6 +38,8 @@ void Water::InitializeTextures(int size)
     std::vector<glm::vec2> physicData(size * size, glm::vec2(0.0f, 0.0f));
     glCreateTextures(GL_TEXTURE_2D, 1, &texturePhysics);
     glBindTexture(GL_TEXTURE_2D, texturePhysics);
+    glTextureParameteri(texturePhysics, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(texturePhysics, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTextureStorage2D(texturePhysics, 1,GL_RG32F, size, size);//Immutable size
     glTextureSubImage2D(texturePhysics, 0, 0, 0, size, size, GL_RG, GL_FLOAT, physicData.data());
     glBindTextureUnit(TEXTURE_SLOT_WATER_PHYSICS, texturePhysics);
@@ -74,4 +76,5 @@ void Water::write_params_to_application_struct(ApplicationUboDataStructure& app_
     app_ubo.water_params.x = simulation_resolution;
     app_ubo.water_params.y = absorbance;
     app_ubo.water_params.z = 24 * 4.0f / simulation_resolution;
+    app_ubo.water_params.w = 2.0f;
 }

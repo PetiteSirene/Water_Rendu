@@ -25,7 +25,6 @@ int main(int argc, char* argv[]) {
 
 	ContextHelper::init_context_all(1440, 900, "Shallow Water",4);//No MSAA, because of Deferred shading
 	ContextHelper::print_opengl_info();
-
 	Scene scene;
 	scene.load_shaders(FOLDER_ROOT);
 	scene.create_material_texture_array(FOLDER_ROOT, "rock");
@@ -156,6 +155,7 @@ int main(int argc, char* argv[]) {
 		app_ubo_data.cam_pos = vec4(cam.m_pos, ContextHelper::time_from_start_s);
 		app_ubo_data.resolution.x = ContextHelper::resolution.x;
 		app_ubo_data.resolution.y = ContextHelper::resolution.y;
+		app_ubo_data.resolution.w = ContextHelper::time_frame_s;
 		scene.write_params_to_application_struct(app_ubo_data);
 		water.write_params_to_application_struct(app_ubo_data);
 		application_ubo.write_to_gpu(&app_ubo_data);

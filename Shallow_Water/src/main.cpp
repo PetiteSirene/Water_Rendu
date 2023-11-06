@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
 	isWaterTexture.set_filtering_params();
 	isWaterTexture.create_empty(vec2(water.GetSimulationResolution(), water.GetSimulationResolution()));
 	isWaterTexture.set_slot(1);
-	isWaterTexture.bind_to_image(GL_WRITE_ONLY);
+	isWaterTexture.bind_to_image();
 
 
 
@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
 		{
 			glViewport(0, 0, ContextHelper::resolution.x, ContextHelper::resolution.y);
 			isWaterTexture.re_create_empty(ContextHelper::resolution);
-			isWaterTexture.bind_to_image(GL_WRITE_ONLY);
+			isWaterTexture.bind_to_image();
 		}
 		scene.flush_tessellation_levels();
 

@@ -39,7 +39,7 @@ void Water::InitializeTextures(int size)
     std::vector<glm::vec2> physicData(size * size, glm::vec2(0.0f, 0.0f));
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 5; j++) {
-            physicData[((size + i) * (size + i)) / 2 + j - size / 2] = vec2(5.0f, 0.0f);
+            physicData[((size + i) * (size + i)) / 2 + j - size / 2] = vec2(30.0f, 30.0f);
         }
 
     }

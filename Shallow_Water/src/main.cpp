@@ -166,11 +166,13 @@ int main(int argc, char* argv[]) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//clear Frambuffer channel + Z-buffer 
 		scene.render_scene();//Render the scene without water
 		glFinish();//Force wait for GPU to finish jobs, since the post_process shader will render
+		water.flush_tessellation_levels();
 		water.render_water();
 		glFinish();
 		if (draw_wireframe)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+		scene.flush_tessellation_levels();
 		//ImGui interface starts here
 		ImGui::Begin("Parameters");
 		static float theta_light = 30.0f;
@@ -208,7 +210,7 @@ int main(int argc, char* argv[]) {
 		ImGui::TreePop();
 		}
 		scene.gui(app_ubo_data);
-
+		water.gui(app_ubo_data);
 		ImGui::End();
 
 		ContextHelper::end_frame();//glfwSwapBuffers [hookpoint for profiler/debugger]

@@ -58,14 +58,14 @@ void Scene::create_material_texture_array(std::string base_path, std::string bas
 
 void Scene::flush_tessellation_levels()
 {
-	static int tess = -1;
+	//static int tess = -1;
 
-	if (tess != m_tessellation_base_level)
+	//if (tess != m_tessellation_base_level)
 	{
 		GLfloat levels[] = { m_tessellation_base_level, m_tessellation_base_level, m_tessellation_base_level, m_tessellation_base_level };
 		glPatchParameterfv(GL_PATCH_DEFAULT_OUTER_LEVEL, levels);
 		glPatchParameterfv(GL_PATCH_DEFAULT_INNER_LEVEL, levels);
-		tess = m_tessellation_base_level;
+		//tess = m_tessellation_base_level;
 	}
 }
 

@@ -20,11 +20,15 @@ public:
     void BindNormalsTexture(GLuint unit);
 
     void write_params_to_application_struct(ApplicationUboDataStructure& app_ubo);
+    void flush_tessellation_levels();
+
+    void gui(ApplicationUboDataStructure& app_ubo);
 
 private:
     ShaderGLSL* m_shader_water;
 
     int simulation_resolution;
+    int m_tesselation_level;
 
     // Ajout des textures
     GLuint texturePhysics; //2 canaux: hauteur, vitesse

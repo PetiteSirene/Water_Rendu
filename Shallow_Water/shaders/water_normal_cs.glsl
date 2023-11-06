@@ -47,7 +47,7 @@ void main(){
 	if (coord.x >= water_params.x || coord.y >= water_params.x)
         return; //Do not process out of screen
     
-    vec4 normal = crossProduct(xvec, zvec); // inverser les vec si ca marche pas
+    vec4 normal = vec4(normalize(cross(xvec.xyz,zvec.xyz)),0.0); // inverser les vec si ca marche pas
         
         
     imageStore(normalsTexture,coord,vec4(0.0,1.0,0.0,0.0));

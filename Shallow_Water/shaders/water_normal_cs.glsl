@@ -50,7 +50,7 @@ void main(){
     vec4 normal = crossProduct(xvec, zvec); // inverser les vec si ca marche pas
         
         
-    imageStore(normalsTexture,coord,normal);
+    imageStore(normalsTexture,coord,vec4(0.0,1.0,0.0,0.0));
  
 
 }

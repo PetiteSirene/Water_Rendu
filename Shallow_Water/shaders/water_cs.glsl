@@ -51,7 +51,7 @@ void compute_speed(ivec2 coord){
     float p3 = imageLoad(water_physic, coord + ivec2(0,-1)).r;
     float p4 = imageLoad(water_physic, coord + ivec2(-1,0)).r;
     float newVt = a * (p1 + p2 + p3 + p4) + (2 - 4*a) * p - deltaT * Vt;
-    imageStore(water_physic, coord, vec4(1.0,1.0,0,0));
+    imageStore(water_physic, coord, vec4(5.0,1.0,0.0,0.0));
 }
 
 void main(){

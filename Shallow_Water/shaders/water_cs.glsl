@@ -19,14 +19,15 @@ layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
     vec4 water_params; //.x:resolution[INT], .y:absorbance, .z:water_tile_size[FLOAT]
 };
 
-layout(binding = 0) uniform sampler2D depth_buffer;//G-Buffer,read from, in [0.0,1.0] !
 
-layout(rg32f,binding = 2) uniform image2D water_physic;//output image
+layout(r32f,binding = 0) uniform image2D tex_altitude_ws;
+
+layout(rgba32f,binding = 2) uniform image2D water_physic;//output image
 
 float deltaT = intBitsToFloat(resolution.w);
 float h = water_params.z;
 float c = water_params.w;
-
+/*
 float read_depth(vec2 center)
 {
     float ndc_depth =  2.0*textureLod(depth_buffer,center,0.0).x-1.0;
@@ -41,17 +42,27 @@ vec3 WorldPosFromCoord(vec2 n_coords){
   //Skipping perspective division because comparing to zero ?
 	return (inv_w_v_p * clipSpacePosition).xyz;
 	}
-
+*/
 void compute_speed(ivec2 coord){
+    //Reads from z,w (height, speed)
+    //Writes to x,y (height, speed)
+    //Copy from x,y to z,w made in normals_cs
+
+    float dt = 0.001;//1ms hardcoded
+
+
     float a = pow(c,2)*pow(deltaT,2)/pow(h,2);
-    float old = imageLoad(water_physic,coord).y;
-    float p = imageLoad(water_physic, coord).x;
-    float p1 = imageLoad(water_physic, coord + ivec2(0,1)).x;
-    float p2 = imageLoad(water_physic, coord + ivec2(1,0)).x;
-    float p3 = imageLoad(water_physic, coord + ivec2(0,-1)).x;
-    float p4 = imageLoad(water_physic, coord + ivec2(-1,0)).x;
-    float newP = 0.97999 * (0.1 * (p1 + p2 + p3 + p4) + (2 - 4*0.1) * p - old);
-    imageStore(water_physic, coord, vec4(newP,p,0.0,0.0));
+    float v = imageLoad(water_physic,coord).w;
+    float p = imageLoad(water_physic, coord).z;
+    float p1 = imageLoad(water_physic, coord + ivec2(0,1)).z;
+    float p2 = imageLoad(water_physic, coord + ivec2(1,0)).z;
+    float p3 = imageLoad(water_physic, coord + ivec2(0,-1)).z;
+    float p4 = imageLoad(water_physic, coord + ivec2(-1,0)).z;
+
+    float newP = a * (p1 + p2 + p3 + p4) + (2.0 - 4.0*a) * p - v*deltaT;
+
+    //copy input (to fix)
+    imageStore(water_physic, coord, vec4(p,v,0.0,0.0));
 }
 
 void main(){

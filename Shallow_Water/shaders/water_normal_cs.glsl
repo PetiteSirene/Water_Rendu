@@ -19,7 +19,7 @@ layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
     vec4 water_params; //.x:resolution, .y:absorbance
 };
 
-layout(binding = 2,rg32f) uniform image2D physicsTexture;
+layout(binding = 2,rgba32f) uniform image2D physicsTexture;
 
 layout(binding = 3) writeonly uniform image2D normalsTexture;
 
@@ -28,6 +28,10 @@ void main(){
 	ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
   if (coord.x >= water_params.x || coord.y >= water_params.x)
         return; //Do not process out of screen
+
+  //Copy texture XY to ZW
+  vec2 data_src = imageLoad(physicsTexture,coord).xy;
+  imageStore(physicsTexture,coord,data_src.xyxy);
 
     // tantpis pour les effets de bord
     float xdiff = imageLoad(physicsTexture,coord + ivec2(1,0)).x - imageLoad(physicsTexture,coord - ivec2(1,0)).x;

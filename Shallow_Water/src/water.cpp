@@ -36,10 +36,10 @@ void Water::InitializeTextures(int size)
     //Can be only called once !
    
     //physics part
-    std::vector<glm::vec2> physicData(size * size, glm::vec2(0.0f, 0.0f));
-    for (int i = 0; i < 5; i++) {
-        for (int j = 0; j < 5; j++) {
-            physicData[((size + i) * (size + i)) / 2 + j - size / 2] = vec2(30.0f, 30.0f);
+    std::vector<glm::vec4> physicData(size * size, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+    for (int i = -2; i <= 2; i++) {
+        for (int j = -2; j <= 2; j++) {
+            physicData[size*(size/2+i) + (size/2 + j)] = vec4(30.0f, 0.0f, 5.0f, 0.0f);
         }
 
     }
@@ -47,10 +47,10 @@ void Water::InitializeTextures(int size)
     //glBindTexture(GL_TEXTURE_2D, texturePhysics);
     glTextureParameteri(texturePhysics, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTextureParameteri(texturePhysics, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTextureStorage2D(texturePhysics, 1,GL_RG32F, size, size);//Immutable size
-    glTextureSubImage2D(texturePhysics, 0, 0, 0, size, size, GL_RG, GL_FLOAT, physicData.data());
+    glTextureStorage2D(texturePhysics, 1,GL_RGBA32F, size, size);//Immutable size
+    glTextureSubImage2D(texturePhysics, 0, 0, 0, size, size, GL_RGBA, GL_FLOAT, physicData.data());
     glBindTextureUnit(TEXTURE_SLOT_WATER_PHYSICS, texturePhysics);
-    glBindImageTexture(TEXTURE_SLOT_WATER_PHYSICS, texturePhysics, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RG32F);
+    glBindImageTexture(TEXTURE_SLOT_WATER_PHYSICS, texturePhysics, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA32F);
     //normals part
     std::vector<glm::vec4> normalData(size * size, glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
     glCreateTextures(GL_TEXTURE_2D, 1, &textureNormals);

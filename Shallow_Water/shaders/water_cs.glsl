@@ -44,12 +44,12 @@ vec3 WorldPosFromCoord(vec2 n_coords){
 
 void compute_speed(ivec2 coord){
     float a = pow(c,2)*pow(deltaT,2)/pow(h,2);
-    float old = imageLoad(water_physic,coord).g;
-    float p = imageLoad(water_physic, coord).r;
-    float p1 = imageLoad(water_physic, coord + ivec2(0,1)).r;
-    float p2 = imageLoad(water_physic, coord + ivec2(1,0)).r;
-    float p3 = imageLoad(water_physic, coord + ivec2(0,-1)).r;
-    float p4 = imageLoad(water_physic, coord + ivec2(-1,0)).r;
+    float old = imageLoad(water_physic,coord).y;
+    float p = imageLoad(water_physic, coord).x;
+    float p1 = imageLoad(water_physic, coord + ivec2(0,1)).x;
+    float p2 = imageLoad(water_physic, coord + ivec2(1,0)).x;
+    float p3 = imageLoad(water_physic, coord + ivec2(0,-1)).x;
+    float p4 = imageLoad(water_physic, coord + ivec2(-1,0)).x;
     float newP = 0.97999 * (0.1 * (p1 + p2 + p3 + p4) + (2 - 4*0.1) * p - old);
     imageStore(water_physic, coord, vec4(newP,p,0.0,0.0));
 }

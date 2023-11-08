@@ -18,21 +18,23 @@ public:
 	void write_params_to_application_struct(ApplicationUboDataStructure& app_ubo);
 	
 	void render_scene();
+	void render_scene_depth(GPUBuffer& application_ubo,int simulation_resolution);
 
-	void gui(ApplicationUboDataStructure& app_ubo);
-
+	bool gui(ApplicationUboDataStructure& app_ubo);
+	float m_tile_size;//in abstract length unit (let's say meters)
+	int m_tile_x_count;
 private:
+	ShaderGLSL* m_shader_scene_depth;
 	ShaderGLSL* m_shader_scene;
 	ShaderGLSL* m_shader_background;
-
+	Framebuffer fbo_scene_depth;
 	Texture2D tex_material[5];//albedo, normal, roughness, AO, height
 	VertexArrayObject m_scene_vao;//Dummy VAO to tessellation drawcall
 
 	int m_tessellation_base_level;// Triangles resolution for scene rendering
 	int m_seed;
 	float m_y_offset;
-	float m_tile_size;//in abstract length unit (let's say meters)
-	int m_tile_x_count;
+
 };
 
 #endif

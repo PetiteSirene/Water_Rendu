@@ -27,6 +27,7 @@ in vec3 bitangent_ws;
 in vec3 pos_ws;
 in vec2 tex_coords;
 
+layout(binding = 0) uniform sampler2D tex_altitude;
 layout(binding = 4) uniform sampler2D tex_albedo;
 layout(binding = 5) uniform sampler2D tex_normal;
 layout(binding = 6) uniform sampler2D tex_roughness;
@@ -35,16 +36,9 @@ layout(binding = 7) uniform sampler2D tex_ao;
 vec3 get_normal();//bump mapping
 vec3 get_sun_intensity();//To call for Phong shading
 
-
+float scene_size_xz = uintBitsToFloat(scene_params.z)*scene_params.x;
 void main() 
 {
-    /*
-    if (pos_ws.y<0.0)//delete fragment if water
-    {
-        discard;
-        return;
-    }*/
-
     float high_slope = clamp(6.0*(normal_ws.y-0.4),0.0,1.0);
     high_slope = mix(high_slope,1.0,clamp(1.0-pos_ws.y,0.0,1.0));
     float low_slope = clamp((1.1-normal_ws.y*1.2)*5.0,0.0,1.0);
@@ -69,8 +63,9 @@ void main()
     color = clamp(color,0.0,1.0);
     color *= ao;//pre-baked ambient occlusion
     
-    color = mix(color,vec3(0.1,0.5,0.8),0.5*step(pos_ws.y,0.0));//blue if < 0.0
+    //color = mix(color,vec3(0.1,0.5,0.8),0.5*step(pos_ws.y,0.0));//blue if < 0.0
 
+    color = vec3(texture(tex_altitude,pos_ws.xz/scene_size_xz+0.5).x);
     pixel_color = vec4(color,1.0);//ID of ground is 1
 }
 

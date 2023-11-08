@@ -11,6 +11,7 @@ using namespace glm;
 //more at https://www.khronos.org/opengl/wiki/Interface_Block_(GLSL)#Memory_layout
 
 //Texture channels ID:
+#define TEXTURE_SLOT_ALTITUDE_WS 0 // from FBO
 #define TEXTURE_SLOT_WATER_PHYSICS 2
 #define TEXTURE_SLOT_WATER_NORMALS 3
 #define TEXTURE_SLOT_ALBEDO_GROUND 4

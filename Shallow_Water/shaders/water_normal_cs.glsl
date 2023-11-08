@@ -23,31 +23,23 @@ layout(binding = 2,rg32f) uniform image2D physicsTexture;
 
 layout(binding = 3) writeonly uniform image2D normalsTexture;
 
-vec4 crossProduct(vec4 v1, vec4 v2) {
-    double resultX = v1.y * v2.z - v1.z * v2.y;
-    double resultY = v1.z * v2.x - v1.x * v2.z;
-    double resultZ = v1.x * v2.y - v1.y * v2.x;
-
-    return vec4(resultX, resultY, resultZ, 0.0);
-}
-
-
 void main(){
     float dist = 48.0f/ water_params.x; // a mettre dans l'ubo et sans le 48 hardcodé
 	ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
+  if (coord.x >= water_params.x || coord.y >= water_params.x)
+        return; //Do not process out of screen
 
     // tantpis pour les effets de bord
     float xdiff = imageLoad(physicsTexture,coord + ivec2(1,0)).x - imageLoad(physicsTexture,coord - ivec2(1,0)).x;
 
     float zdiff = imageLoad(physicsTexture,coord + ivec2(0,1)).x - imageLoad(physicsTexture,coord - ivec2(0,1)).x;
 
-    vec4 xvec = vec4( 2 * dist, xdiff, 0.0f, 0.0f); 
-    vec4 zvec = vec4( 0.0f, zdiff, 2 * dist, 0.0f);
+    vec3 xvec = vec3( 2 * dist, xdiff, 0.0); 
+    vec3 zvec = vec3( 0.0, zdiff, 2 * dist);
 
-	if (coord.x >= water_params.x || coord.y >= water_params.x)
-        return; //Do not process out of screen
+
     
-    vec4 normal = vec4(normalize(cross(xvec.xyz,zvec.xyz)),0.0); // inverser les vec si ca marche pas
+    vec4 normal = vec4(normalize(cross(xvec,zvec)),0.0);
         
         
     imageStore(normalsTexture,coord,normal);

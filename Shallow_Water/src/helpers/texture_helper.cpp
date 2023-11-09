@@ -165,6 +165,7 @@ void Framebuffer::update_size(const glm::uvec2 size)
 			m_texture_channels[i].create_empty(glm::uvec2(16, 16));
 			m_texture_channels[i].set_filtering_params(GL_LINEAR, GL_LINEAR, 0.0f, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 			m_texture_channels[i].set_slot(i);
+			m_texture_channels[i].bind_to_image();
 		}
 		if (m_is_z_buffer)
 		{
@@ -172,17 +173,20 @@ void Framebuffer::update_size(const glm::uvec2 size)
 			m_texture_channels[m_color_attachment_count].create_empty(glm::uvec2(16, 16));
 			m_texture_channels[m_color_attachment_count].set_filtering_params(GL_LINEAR, GL_LINEAR, 0.0f, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 			m_texture_channels[m_color_attachment_count].set_slot(m_color_attachment_count);
+			m_texture_channels[m_color_attachment_count].bind_to_image();
 		}
 	}
 
 	for (int i = 0; i < m_color_attachment_count; i++)
 	{
 		m_texture_channels[i].re_create_empty(size, 1);
+		m_texture_channels[i].bind_to_image();
 		glNamedFramebufferTexture(m_framebuffer_id, GL_COLOR_ATTACHMENT0 + i, m_texture_channels[i].m_tex_id, 0);
 	}
 	if (m_is_z_buffer)
 	{
 	m_texture_channels[m_color_attachment_count].re_create_empty(size, 1);
+	m_texture_channels[m_color_attachment_count].bind_to_image();
 	glNamedFramebufferTexture(m_framebuffer_id, GL_DEPTH_ATTACHMENT, m_texture_channels[m_color_attachment_count].m_tex_id, 0);
 	}
 	

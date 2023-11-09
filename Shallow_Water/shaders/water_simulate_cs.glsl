@@ -43,7 +43,10 @@ void main(){
     float p3 = imageLoad(water_physic, coord + ivec2(0,-1)).z;
     float p4 = imageLoad(water_physic, coord + ivec2(-1,0)).z;
 
-    float p_new = a * (p1 + p2 + p3 + p4) + (2.0 - 4.0*a) * p - p_prev;
+    float p_new = a * (p1 + p2 + p3 + p4 - 4.0*p) + (1.0 -water_sim_params.y)*(p - p_prev) + p;
 
-    imageStore(water_physic, coord, vec4(p_new,p,0.0,0.0));
+    if (imageLoad(tex_altitude_ws, coord).x<0.0)
+        imageStore(water_physic, coord, vec4(p_new,p,0.0,0.0));
+    //else
+    //    imageStore(water_physic, coord, vec4(20.0,20.0,0.0,0.0));
 }

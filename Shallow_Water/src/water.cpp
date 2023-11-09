@@ -11,10 +11,10 @@ Water::Water()
     simulate_shader = new ShaderGLSL("simulation_shader");
     normal_shader = new ShaderGLSL("normal_shader");
     copy_shader = new ShaderGLSL("copy_shader");
-    celerity = 6.0f;
-    damping = 0.01f;
-    simulation_resolution = 512;
-    delta_t_sec = 0.01f;
+    celerity = 4.0f;
+    damping = 0.001f;
+    simulation_resolution = 1024;
+    delta_t_sec = 0.008f;
     InitializeTextures(simulation_resolution);
 }
 

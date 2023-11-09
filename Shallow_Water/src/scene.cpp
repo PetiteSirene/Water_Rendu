@@ -71,7 +71,7 @@ void Scene::flush_tessellation_levels()
 
 	//if (tess != m_tessellation_base_level)
 	{
-		GLfloat levels[] = { m_tessellation_base_level, m_tessellation_base_level, m_tessellation_base_level, m_tessellation_base_level };
+		GLfloat levels[] = { (float)m_tessellation_base_level, (float)m_tessellation_base_level, (float)m_tessellation_base_level, (float)m_tessellation_base_level };
 		glPatchParameterfv(GL_PATCH_DEFAULT_OUTER_LEVEL, levels);
 		glPatchParameterfv(GL_PATCH_DEFAULT_INNER_LEVEL, levels);
 		//tess = m_tessellation_base_level;
@@ -85,6 +85,7 @@ void Scene::write_params_to_application_struct(ApplicationUboDataStructure& app_
 	app_ubo.scene_params.z = glm::floatBitsToUint(m_tile_size);//store the 32 bits of  float in an unsigned int (UintBitsToFloat to be called in shader)
 	app_ubo.scene_params.w = glm::floatBitsToUint(m_y_offset);
 }
+
 
 
 void Scene::render_scene()

@@ -4,12 +4,17 @@ Water::Water()
 {
     m_tesselation_level = 1;
     refractive_index = 1.333f;
-    absorbance = 100.0f;
-    color = vec3(0.0f, 0.0f, 1.0f);
+    absorbance = 0.01f;//fraction per meter
+    reflection_ratio = 0.5f;
+    color = vec4(0.0f, 0.0f, 1.0f,0.0f);
     m_shader_water = new ShaderGLSL("water_shader");
-
+    simulate_shader = new ShaderGLSL("simulation_shader");
+    normal_shader = new ShaderGLSL("normal_shader");
+    copy_shader = new ShaderGLSL("copy_shader");
+    celerity = 6.0f;
+    damping = 0.01f;
     simulation_resolution = 512;
-
+    delta_t_sec = 0.01f;
     InitializeTextures(simulation_resolution);
 }
 
@@ -20,6 +25,20 @@ void Water::load_shaders(std::string base_path)
     m_shader_water->add_shader(GL_FRAGMENT_SHADER, base_path, "shaders/water_fs.glsl");
     m_shader_water->compile_and_link_to_program();
     ContextHelper::add_shader_to_hot_reload(m_shader_water);
+
+    
+    simulate_shader->add_shader(GL_COMPUTE_SHADER, base_path, "shaders/water_simulate_cs.glsl");
+    simulate_shader->compile_and_link_to_program();
+    ContextHelper::add_shader_to_hot_reload(simulate_shader);
+
+    copy_shader->add_shader(GL_COMPUTE_SHADER, base_path, "shaders/water_copy_cs.glsl");
+    copy_shader->compile_and_link_to_program();
+    ContextHelper::add_shader_to_hot_reload(copy_shader);
+    
+    normal_shader->add_shader(GL_COMPUTE_SHADER, base_path, "shaders/water_normal_cs.glsl");
+    normal_shader->compile_and_link_to_program();
+    ContextHelper::add_shader_to_hot_reload(normal_shader);
+
 }
 
 void Water::render_water()
@@ -39,12 +58,11 @@ void Water::InitializeTextures(int size)
     std::vector<glm::vec4> physicData(size * size, glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
     for (int i = -2; i <= 2; i++) {
         for (int j = -2; j <= 2; j++) {
-            physicData[size*(size/2+i) + (size/2 + j)] = vec4(30.0f, 0.0f, 5.0f, 0.0f);
+            physicData[size*(size/2+i) + (size/2 + j)] = vec4(5.0f, 5.0f, 5.0f, 5.0f);
         }
 
     }
     glCreateTextures(GL_TEXTURE_2D, 1, &texturePhysics);
-    //glBindTexture(GL_TEXTURE_2D, texturePhysics);
     glTextureParameteri(texturePhysics, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTextureParameteri(texturePhysics, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTextureStorage2D(texturePhysics, 1,GL_RGBA32F, size, size);//Immutable size
@@ -54,7 +72,6 @@ void Water::InitializeTextures(int size)
     //normals part
     std::vector<glm::vec4> normalData(size * size, glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
     glCreateTextures(GL_TEXTURE_2D, 1, &textureNormals);
-    //glBindTexture(GL_TEXTURE_2D, textureNormals);
     glTextureStorage2D(textureNormals, 1, GL_RGBA32F, size, size);//Immutable size
     glTextureSubImage2D(textureNormals, 0, 0, 0, size, size, GL_RGBA, GL_FLOAT, normalData.data());
     glBindTextureUnit(TEXTURE_SLOT_WATER_NORMALS, textureNormals);
@@ -62,47 +79,70 @@ void Water::InitializeTextures(int size)
 
 }
 
+void Water::simulate_water()
+{
+    const uvec2 work_group_size = uvec2(8, 8);//MUST MATCH COMPUTE SHADER
+    const uvec2 dispatch_count = uvec2((simulation_resolution - 1u), (simulation_resolution - 1u)) / work_group_size + uvec2(1u, 1u);
+
+    for (int i = (int)((ContextHelper::time_from_start_s-ContextHelper::time_frame_s)/ delta_t_sec); i < (int)(ContextHelper::time_from_start_s / delta_t_sec); i++)
+    {
+        simulate_shader->use_shader_program();
+        glDispatchCompute(dispatch_count.x, dispatch_count.y, 1);//Dispatch that covers screen 
+        glFlush();
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);//Sync barrier to ensure CS finished (since it is writing to an Image)
+        
+        copy_shader->use_shader_program();
+        glDispatchCompute(dispatch_count.x, dispatch_count.y, 1);//Dispatch that covers screen 
+        glFlush();
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);//Sync barrier to ensure CS finished (since it is writing to an Image)
+    }
+    normal_shader->use_shader_program();
+    glDispatchCompute(dispatch_count.x, dispatch_count.y, 1);
+    glFlush();
+    glFinish();
+
+
+
+}
+
+
 int Water::GetSimulationResolution()
 {
     return simulation_resolution;
 }
 
-//No need I guess
-void Water::BindPhysicsTexture(GLuint unit)
-{
-    glBindTextureUnit(unit, texturePhysics);
-}
-
-void Water::BindNormalsTexture(GLuint unit)
-{
-    glBindTextureUnit(unit, textureNormals);
-}
-
 void Water::write_params_to_application_struct(ApplicationUboDataStructure& app_ubo)
 {
-    app_ubo.water_params.x = simulation_resolution;
-    app_ubo.water_params.y = absorbance;
-    app_ubo.water_params.z = 24 * 4.0f / simulation_resolution;
-    app_ubo.water_params.w = 1.0f;
+    app_ubo.resolution.w = simulation_resolution;
+    app_ubo.water_sim_params.x = celerity;
+    app_ubo.water_sim_params.y = damping;
+    app_ubo.water_sim_params.z = delta_t_sec;
+    app_ubo.water_sim_params.w = (app_ubo.scene_params.x * glm::uintBitsToFloat(app_ubo.scene_params.z)) / simulation_resolution;
+    app_ubo.water_rendering_params.x = refractive_index;
+    app_ubo.water_rendering_params.y = absorbance;
+    app_ubo.water_rendering_params.z = reflection_ratio;
+    app_ubo.water_rendering_params.w = 1.0f;
+    app_ubo.water_aborption_color = color;
 }
 
 void Water::flush_tessellation_levels()
 {
-    //static int tess = -1;
-
-    //if (tess != m_tessellation_base_level)
-    {
-        GLfloat levels[] = { m_tesselation_level, m_tesselation_level, m_tesselation_level, m_tesselation_level };
-        glPatchParameterfv(GL_PATCH_DEFAULT_OUTER_LEVEL, levels);
-        glPatchParameterfv(GL_PATCH_DEFAULT_INNER_LEVEL, levels);
-        //tess = m_tessellation_base_level;
-    }
+    GLfloat levels[] = { (float)m_tesselation_level, (float)m_tesselation_level, (float)m_tesselation_level, (float)m_tesselation_level };
+    glPatchParameterfv(GL_PATCH_DEFAULT_OUTER_LEVEL, levels);
+    glPatchParameterfv(GL_PATCH_DEFAULT_INNER_LEVEL, levels);
 }
 
 void Water::gui(ApplicationUboDataStructure& app_ubo)
 {
     if (ImGui::TreeNode("Water")) {
+        ImGui::Text(("A factor = " + std::to_string(celerity* celerity* delta_t_sec* delta_t_sec/(app_ubo.water_sim_params.w* app_ubo.water_sim_params.w))).c_str());
+        ImGui::ColorEdit3("Absorbing color", &(color.x));
         ImGui::SliderInt("Water tessellation level", &(m_tesselation_level), 1, 8);
+        ImGui::SliderFloat("Celerity", &celerity, 0.1f, 10.0f);
+        ImGui::SliderFloat("damping", &damping, 0.0f, 0.1f);
+        ImGui::SliderFloat("refractive index", &refractive_index, 1.0f, 4.0f);
+        ImGui::SliderFloat("absorbance", &absorbance, 0.0f, 1.0f);
+        ImGui::SliderFloat("reflection ratio", &reflection_ratio, 0.0f, 1.0f);
         ImGui::TreePop();
     }
 }

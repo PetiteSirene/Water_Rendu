@@ -23,7 +23,7 @@
 
 int main(int argc, char* argv[]) {
 
-	ContextHelper::init_context_all(1440, 900, "Shallow Water",4);//No MSAA, because of Deferred shading
+	ContextHelper::init_context_all(1440, 900, "Shallow Water",4);
 	ContextHelper::print_opengl_info();
 	Scene scene;
 	scene.load_shaders(FOLDER_ROOT);
@@ -54,16 +54,6 @@ int main(int argc, char* argv[]) {
 	app_ubo_data.resolution.y = ContextHelper::resolution.y;
 	app_ubo_data.resolution.z = 0;//Normal display
 
-	ShaderGLSL* compute_shader = new ShaderGLSL("compute_shader");
-	compute_shader->add_shader(GL_COMPUTE_SHADER, FOLDER_ROOT, "shaders/water_cs.glsl");
-	compute_shader->compile_and_link_to_program();
-	ContextHelper::add_shader_to_hot_reload(compute_shader);
-
-	ShaderGLSL* compute_shader_normal = new ShaderGLSL("normal");
-	compute_shader_normal->add_shader(GL_COMPUTE_SHADER, FOLDER_ROOT, "shaders/water_normal_cs.glsl");
-	compute_shader_normal->compile_and_link_to_program();
-	ContextHelper::add_shader_to_hot_reload(compute_shader_normal);
-
 
 	//terrain depth rendering flags
 	bool rendering_altidude = true;
@@ -83,20 +73,21 @@ int main(int argc, char* argv[]) {
 		if (ContextHelper::window_resized)
 		{
 			glViewport(0, 0, ContextHelper::resolution.x, ContextHelper::resolution.y);
+			proj.set_viewport_resolution(ContextHelper::resolution);
 		}
 
-		scene.flush_tessellation_levels();
-		proj.set_viewport_resolution(ContextHelper::resolution);
+		
 		cam.flush();
 
 		//Render altitude
 		if (rendering_altidude)
 		{
+			scene.flush_tessellation_levels();
 			scene.render_scene_depth(application_ubo, water.GetSimulationResolution());
 			rendering_altidude = false;
 		}
 
-
+		//write to UBO
 		app_ubo_data.proj = proj.m_proj;//
 		app_ubo_data.inv_proj = glm::inverse(app_ubo_data.proj);
 		app_ubo_data.w_v = cam.m_w_v;//
@@ -105,42 +96,32 @@ int main(int argc, char* argv[]) {
 		app_ubo_data.cam_pos = vec4(cam.m_pos, ContextHelper::time_from_start_s);//
 		app_ubo_data.resolution.x = ContextHelper::resolution.x;
 		app_ubo_data.resolution.y = ContextHelper::resolution.y;
-		app_ubo_data.resolution.w = glm::floatBitsToInt(0.002f);//2ms
 		scene.write_params_to_application_struct(app_ubo_data);
 		water.write_params_to_application_struct(app_ubo_data);
 		application_ubo.write_to_gpu(&app_ubo_data);
 
 
 
+
+
+		water.simulate_water();
+
+		
+
 		if (draw_wireframe)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-		const uvec2 work_group_size = uvec2(8, 8);//MUST MATCH COMPUTE SHADER
-
-		const uvec2 dispatch_count = uvec2((water.GetSimulationResolution() + (work_group_size.x - 1)) / work_group_size.x,
-			(water.GetSimulationResolution() + (work_group_size.y - 1)) / work_group_size.y);
-
-		compute_shader->use_shader_program();//Compute shader for SSAO + depth blur
-		glDispatchCompute(dispatch_count.x, dispatch_count.y, 1);//Dispatch that covers screen 
-		glFlush();
-		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);//Sync barrier to ensure CS finished (since it is writing to an Image)
-		
-		compute_shader_normal->use_shader_program();
-		glDispatchCompute(dispatch_count.x, dispatch_count.y, 1);
-		glFlush();
-		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-		
-
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//clear Frambuffer channel + Z-buffer 
+		scene.flush_tessellation_levels();
 		scene.render_scene();//Render the scene without water
-		glFinish();//Force wait for GPU to finish jobs, since the post_process shader will render
 		water.flush_tessellation_levels();
 		water.render_water();
 		glFinish();
+
 		if (draw_wireframe)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		scene.flush_tessellation_levels();
+
 		//ImGui interface starts here
 		ImGui::Begin("Parameters");
 		static float theta_light = 30.0f;

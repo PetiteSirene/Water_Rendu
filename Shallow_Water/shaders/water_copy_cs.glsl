@@ -18,26 +18,14 @@ layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
   vec4 water_aborption_color;
 };
 
-layout(binding = 2,rgba32f) uniform image2D physicsTexture;
-
-layout(binding = 3) writeonly uniform image2D normalsTexture;
+layout(binding = 2,rgba32f) uniform restrict image2D physicsTexture;
 
 void main(){
-
 	ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
   if (coord.x >= resolution.w || coord.y >= resolution.w)
-        return;
-  float dist = water_sim_params.w;
+    return; //Do not process out of simulation texture
 
-    // tantpis pour les effets de bord
-    float xdiff = imageLoad(physicsTexture,coord + ivec2(1,0)).x - imageLoad(physicsTexture,coord - ivec2(1,0)).x;
-
-    float zdiff = imageLoad(physicsTexture,coord + ivec2(0,1)).x - imageLoad(physicsTexture,coord - ivec2(0,1)).x;
-
-    vec3 xvec = vec3( 2 * dist, xdiff, 0.0); 
-    vec3 zvec = vec3( 0.0, zdiff, 2 * dist);
-
-    vec4 normal = vec4(normalize(cross(zvec,xvec)),0.0);
-            
-    imageStore(normalsTexture,coord,normal);
+  //Copy texture XY to ZW
+  vec2 data_src = imageLoad(physicsTexture,coord).xy;
+  imageStore(physicsTexture,coord,data_src.xyxy);
 }

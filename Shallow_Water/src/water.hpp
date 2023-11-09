@@ -40,7 +40,8 @@ private:
     float refractive_index;
     float absorbance;
     float reflection_ratio;
-    vec4 color;
+    float disturb_height;
+    vec3 color;
 };
 
 #endif

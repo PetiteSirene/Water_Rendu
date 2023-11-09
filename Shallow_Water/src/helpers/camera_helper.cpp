@@ -157,7 +157,7 @@ void FreeFlyCamera::flush()
 		m_pos -= delta_pos * m_right;
 	if (glfwGetKey(ContextHelper::window, GLFW_KEY_D) == GLFW_PRESS)
 		m_pos += delta_pos * m_right;
-
+	
 	build_basis();
 }
 

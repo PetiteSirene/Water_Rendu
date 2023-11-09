@@ -52,7 +52,6 @@ int main(int argc, char* argv[]) {
 	app_ubo_data.sun_light = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 	app_ubo_data.resolution.x = ContextHelper::resolution.x;
 	app_ubo_data.resolution.y = ContextHelper::resolution.y;
-	app_ubo_data.resolution.z = 0;//Normal display
 
 
 	//terrain depth rendering flags
@@ -99,7 +98,6 @@ int main(int argc, char* argv[]) {
 		scene.write_params_to_application_struct(app_ubo_data);
 		water.write_params_to_application_struct(app_ubo_data);
 		application_ubo.write_to_gpu(&app_ubo_data);
-
 
 
 

@@ -18,7 +18,7 @@ layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
     vec4 water_aborption_color;
 };
 
-layout(r32f,binding = 0) uniform image2D tex_altitude_ws;
+layout(r32f,binding = 0) uniform readonly restrict image2D tex_altitude_ws;
 layout(rgba32f,binding = 2) uniform image2D water_physic;//output image
 
 void main(){
@@ -43,7 +43,7 @@ void main(){
     float p3 = imageLoad(water_physic, coord + ivec2(0,-1)).z;
     float p4 = imageLoad(water_physic, coord + ivec2(-1,0)).z;
 
-    float p_new = a * (p1 + p2 + p3 + p4 - 4.0*p) + (1.0 -water_sim_params.y)*(p - p_prev) + p;
+    float p_new = a * (p1 + p2 + p3 + p4 - 4.0*p) + (1.0 -water_sim_params.y*dt*80.0)*(p - p_prev) + p;
 
     if (imageLoad(tex_altitude_ws, coord).x<0.0)
         imageStore(water_physic, coord, vec4(p_new,p,0.0,0.0));

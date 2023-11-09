@@ -30,12 +30,12 @@ struct ApplicationUboDataStructure
 	mat4 w_v_p; //world to eye matrix
 	mat4 inv_w_v_p; //eye to world matrix
 	vec4 cam_pos;//camera position in world space, .w: time
-	ivec4 resolution; //.x:resolution.x, .y:resolution.y, .z: debug_mode, .w: sim_resolution
+	ivec4 resolution; //.x:resolution.x, .y:resolution.y, .z: packed_mouse_coords, .w: sim_resolution
 	vec4 sun_light;//.xyz: direction, .w:intensity
 	uvec4 scene_params; //.x:tile_count, .y:seed, .z:tile_size[FLOAT], .w:map_offset[FLOAT]
 	vec4 water_sim_params; //.x:celerity, .y: damping, .z:delta_time, .w: sim_tile_length
 	vec4 water_rendering_params;
-	vec4 water_aborption_color;
+	vec4 water_aborption_color;//.w = disturb amplitude
 };
 
 #endif

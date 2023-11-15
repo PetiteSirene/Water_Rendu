@@ -28,7 +28,6 @@ float tile_size = water_sim_params.w;
 void main() 
 {
     tex_coords = (ijCoords[0] + gl_TessCoord.xy)/float(resolution.w);
-    vec3 pos;
     pos.xz = tile_size*(ijCoords[0]+gl_TessCoord.xy) - scene_params.x * uintBitsToFloat(scene_params.z) * 0.5;
     pos.y = textureLod(physicsTexture,tex_coords,0.0).x;
     gl_Position = w_v_p * vec4(pos,1.0);

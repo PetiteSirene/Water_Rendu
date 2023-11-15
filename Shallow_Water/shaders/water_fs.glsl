@@ -21,13 +21,53 @@ layout(binding = UBO_APPLICATION_BINDING, std140) uniform UBO_APPLICATION
 
 in vec3 pos;
 in vec2 tex_coords;//in [0.0,1.0]
+layout(binding = 0) uniform sampler2D tex_altitude;
 layout(binding = 3) uniform sampler2D normalTexture;
-void main() 
+
+vec3 absorption_subs = vec3(1.0,1.0,1.0) - water_aborption_color.xyz;
+float absorbance = water_rendering_params.y;
+float refractive_ratio = 1/water_rendering_params.x;
+
+const float marching_step = 0.01;
+const int max_step = 256;
+const float d_max = 5000.0;
+const float d_min = 0.01;
+
+float raymarch_distance(vec3 p)
 {
-    vec3 n = textureLod(normalTexture,tex_coords,0.0).xyz;
-    vec3 color = 0.5*n+0.5;
+    vec2 tex_coords = (pos.xz + scene_params.x * uintBitsToFloat(scene_params.z) * 0.5) / (water_sim_params.w * float(resolution.w));
+    return p.y - textureLod(tex_altitude, tex_coords,0.0).x;
+}
+float raymarch(vec3 origin, vec3 dir)
+{    
+    float t = 0.0;
+    for (int i=0; i<max_step; i++)
+    {
+        vec3 p = origin + t*dir;
+        float d = raymarch_distance(p);
+        if( d < d_min || t > d_max) break;
+        t += marching_step;
+    }
+    return t;
+}
+
+void main() 
+{    
+    // computing refracted ray
+    vec3 N = textureLod(normalTexture,tex_coords,0.0).xyz;
+    vec3 I = normalize(pos - cam_pos.xyz);
+    vec3 R = refract(I,N,refractive_ratio);
+    float t = 0.0;
+    // raymarching the refracted ray
+    t = raymarch(pos,R);
+    vec3 color = 0.5*R+0.5;
+    color = vec3(1.0,1.0,1.0);
+    color -= absorption_subs * absorbance * raymarch(pos,R);
+
     pixel_color = vec4(color,1.0);
 }
+
+
 
 
 vec3 get_sun_intensity()//To call for Phong shading

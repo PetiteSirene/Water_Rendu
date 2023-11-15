@@ -64,7 +64,7 @@ void main()
     
     //color = mix(color,vec3(0.1,0.5,0.8),0.5*step(pos_ws.y,0.0));//blue if < 0.0
 
-    color = vec3(texture(tex_altitude,pos_ws.xz/scene_size_xz+0.5).x);
+    //color = vec3(texture(tex_altitude,pos_ws.xz/scene_size_xz+0.5).x);
     pixel_color = vec4(color,1.0);//ID of ground is 1
 }
 

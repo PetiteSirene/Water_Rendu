@@ -42,6 +42,10 @@ private:
     float reflection_ratio;
     float disturb_height;
     vec3 color;
+    float raymarch_step;
+    int raymarch_max_iter;
+    float raymarch_min_dist;
+    float raymarch_max_dist;
 };
 
 #endif

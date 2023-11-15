@@ -16,6 +16,10 @@ Water::Water()
     simulation_resolution = 1024;
     delta_t_sec = 0.002f;
     disturb_height = 1.0;
+    raymarch_step = 0.01f;
+    raymarch_min_dist = 0.01f;
+    raymarch_max_dist = 20.0f;
+    raymarch_max_iter = 256;
     InitializeTextures(simulation_resolution);
 }
 
@@ -141,7 +145,11 @@ void Water::write_params_to_application_struct(ApplicationUboDataStructure& app_
     app_ubo.water_rendering_params.y = absorbance;
     app_ubo.water_rendering_params.z = reflection_ratio;
     app_ubo.water_rendering_params.w = glfwGetMouseButton(ContextHelper::window, GLFW_MOUSE_BUTTON_LEFT)==1 ? 1.0f : 0.0f;//is clicked
-    app_ubo.water_aborption_color = vec4(color.r, color.g, color.b, disturb_height);
+    app_ubo.water_absorption_color = vec4(color.r, color.g, color.b, disturb_height);
+    app_ubo.water_raymarching_params.x = raymarch_step;
+    app_ubo.water_raymarching_params.y = raymarch_min_dist;
+    app_ubo.water_raymarching_params.z = raymarch_max_dist;
+    app_ubo.water_raymarching_params.w = glm::intBitsToFloat(raymarch_max_iter);
 }
 
 void Water::flush_tessellation_levels()
@@ -165,6 +173,13 @@ void Water::gui(ApplicationUboDataStructure& app_ubo)
         ImGui::SliderFloat("refractive index", &refractive_index, 1.0f, 4.0f);
         ImGui::SliderFloat("absorbance", &absorbance, 0.0f, 1.0f);
         ImGui::SliderFloat("reflection ratio", &reflection_ratio, 0.0f, 1.0f);
+        if (ImGui::TreeNode("Raymarching")) {
+            ImGui::SliderFloat("step", &raymarch_step, 0.0f, 0.3f);
+            ImGui::SliderFloat("min distance", &raymarch_min_dist, 0.0f, 0.3f);
+            ImGui::SliderFloat("max distance", &raymarch_max_dist, 0.0f, 50.f);
+            ImGui::SliderInt("max iteration", &raymarch_max_iter, 1, 1000);
+            ImGui::TreePop();
+        }
         ImGui::TreePop();
     }
 }

@@ -34,8 +34,9 @@ struct ApplicationUboDataStructure
 	vec4 sun_light;//.xyz: direction, .w:intensity
 	uvec4 scene_params; //.x:tile_count, .y:seed, .z:tile_size[FLOAT], .w:map_offset[FLOAT]
 	vec4 water_sim_params; //.x:celerity, .y: damping, .z:delta_time, .w: sim_tile_length
-	vec4 water_rendering_params;
-	vec4 water_aborption_color;//.w = disturb amplitude
+	vec4 water_rendering_params; // .x:refractive_index, .y:absorbance, .z:reflection_ratio, w.:mouse click(1.0 if clicked, 0.0 if not)
+	vec4 water_absorption_color;// .xyz absorption color .w = disturb amplitude
+	vec4 water_raymarching_params; // .x step, .y: min_dist, .z:max_dist, [UINT].w: max_iter
 };
 
 #endif

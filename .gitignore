@@ -5,6 +5,12 @@
 /obj/
 /Shallow_Water/out/
 
+# Dossier spécifique à CLion
+.idea/
+/Shallow_Water/cmake-build-debug/
+/Shallow_Water/cmake-build-release/
+
+
 
 # Fichiers générés par CMake
 /CMakeFiles/
